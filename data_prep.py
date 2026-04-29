@@ -1,18 +1,13 @@
 import pandas as pd
 
-# Load JSON correctly
-df = pd.read_json("data/yelp_academic_dataset_review.json", lines=True, nrows=5000)
+df = pd.read_csv("data/fake_reviews_dataset.csv")
 
-# Rename column
-df = df.rename(columns={"text": "review"})
+# OR = fake (1), CG = genuine (0)
+df["label"] = (df["label"].str.strip() == "OR").astype(int)
+df["review"] = df["text_"].astype(str)
 
-# Create label
-df["label"] = df["stars"].apply(lambda x: 1 if x >= 4 else 0)
-
-# Keep required columns
-df = df[["review", "label"]].dropna()
-
-# Save cleaned file
-df.to_csv("data/reviews.csv", index=False)
+df = df[["review", "label", "category", "rating"]].dropna()
+df.to_csv("data/reviews_clean.csv", index=False)
 
 print(f"Ready: {len(df)} rows")
+print(f"Fake: {df['label'].sum()} | Real: {(df['label']==0).sum()}")

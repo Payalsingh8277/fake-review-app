@@ -49,8 +49,9 @@ def load_data(csv_path=None):
             df["review"] = df["text"].astype(str)
 
         # Handle 'label' + 'review' format (already formatted)
-        elif "label" in df.columns and "review" in df.columns:
-            pass
+        elif "label" in df.columns and "text_" in df.columns:
+            df["review"] = df["text_"].astype(str)
+            df["label"] = (df["label"].str.strip() == "OR").astype(int)
 
         # Handle any other text column names
         else:
@@ -127,16 +128,21 @@ def train(csv_path=None):
 
     # Handcrafted features
     X_hand  = csr_matrix(extract_handcrafted_features(X_text))
+    
+    import numpy as np
+    X_hand = np.nan_to_num(X_hand.toarray())
+    X_hand = csr_matrix(X_hand)
 
     # Combined feature matrix
     X_combined = hstack([X_tfidf, X_hand])
+
 
     X_train, X_test, y_train, y_test = train_test_split(
         X_combined, y, test_size=0.2, random_state=42, stratify=y
     )
 
     # Ensemble: Logistic Regression + Random Forest
-    lr = LogisticRegression(max_iter=1000, C=1.0, class_weight="balanced")
+    lr = LogisticRegression(max_iter=3000, C=1.0, class_weight="balanced", solver="saga")
     rf = RandomForestClassifier(n_estimators=200, random_state=42,
                                 class_weight="balanced", n_jobs=-1)
 
@@ -159,5 +165,6 @@ def train(csv_path=None):
     joblib.dump(vectorizer, "model/vectorizer.pkl")
     print("💾 Saved model/model.pkl and model/vectorizer.pkl")
 
+
 if __name__ == "__main__":
-    train(csv_path="data/deceptive-opinion.csv")
+    train(csv_path="data/fake_reviews_dataset.csv")

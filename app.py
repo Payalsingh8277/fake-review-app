@@ -7,7 +7,7 @@ import re, string
 from scipy.sparse import hstack, csr_matrix
 
 st.set_page_config(page_title="Fake Review Detector", page_icon="🔍", layout="wide")
-g
+
 # --- CSS ---
 st.markdown("""
 <style>
@@ -42,7 +42,7 @@ def extract_handcrafted_features(texts):
                  "order immediately", "buy immediately", "purchase now"]
                 if uw in text.lower()),                         # urgency phrases
             len(sentences),                                     # sentence count
-            np.mean([len(s.split()) for s in sentences if s.strip()]) if sentences else 0,  # avg sentence length
+            np.mean([len(s.split()) for s in sentences if s.strip()]) if any(s.strip() for s in sentences) else 0.0,
         ])
     return np.array(features)
 
