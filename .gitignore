@@ -1,5 +1,5 @@
-echo __pycache__/ >> .gitignore
-echo backup/ >> .gitignore
-echo data/ >> .gitignore
-echo model/ >> .gitignore
-echo *.pyc >> .gitignore
+__pycache__/
+backup/
+data/
+model/
+*.pyc
