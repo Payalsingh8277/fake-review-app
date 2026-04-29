@@ -2,8 +2,8 @@ import pandas as pd
 
 df = pd.read_csv("data/fake_reviews_dataset.csv")
 
-# OR = fake (1), CG = genuine (0)
-df["label"] = (df["label"].str.strip() == "OR").astype(int)
+# CG = computer-generated/fake (1), OR = original/real (0)
+df["label"] = (df["label"].str.strip().str.upper() == "CG").astype(int)
 df["review"] = df["text_"].astype(str)
 
 df = df[["review", "label", "category", "rating"]].dropna()

@@ -24,7 +24,7 @@ def extract_handcrafted_features(texts):
             text.count('?'),                                    # question marks
             sum(1 for c in text if c.isupper()) / max(len(text), 1),  # uppercase ratio
             len([w for w in words if w.isupper()]) / max(len(words), 1),  # all-caps word ratio
-            text.count(string.punctuation) / max(len(text), 1), # punctuation density
+            sum(1 for c in text if c in string.punctuation) / max(len(text), 1), # punctuation density
             len(set(words)) / max(len(words), 1),               # vocabulary diversity
             sum(text.count(w) for w in ['best', 'perfect', 'amazing', 'love', 'excellent']),  # superlative count
             sum(1 for uw in ["buy now", "act now", "hurry", "dont miss", "grab it",
@@ -48,10 +48,11 @@ def load_data(csv_path=None):
             df["label"]  = (df["deceptive"].str.strip().str.lower() == "deceptive").astype(int)
             df["review"] = df["text"].astype(str)
 
-        # Handle 'label' + 'review' format (already formatted)
+        # Handle Kaggle fake_reviews_dataset format:
+        # CG = computer-generated/fake, OR = original/real.
         elif "label" in df.columns and "text_" in df.columns:
             df["review"] = df["text_"].astype(str)
-            df["label"] = (df["label"].str.strip() == "OR").astype(int)
+            df["label"] = (df["label"].str.strip().str.upper() == "CG").astype(int)
 
         # Handle any other text column names
         else:
@@ -144,7 +145,7 @@ def train(csv_path=None):
     # Ensemble: Logistic Regression + Random Forest
     lr = LogisticRegression(max_iter=1000, C=1.0, class_weight="balanced", solver="liblinear")
     rf = RandomForestClassifier(n_estimators=200, random_state=42,
-                                class_weight="balanced", n_jobs=-1)
+                                class_weight="balanced", n_jobs=1)
 
     ensemble = VotingClassifier(
         estimators=[("lr", lr), ("rf", rf)],
