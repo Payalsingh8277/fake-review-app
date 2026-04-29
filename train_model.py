@@ -31,7 +31,7 @@ def extract_handcrafted_features(texts):
      "order immediately", "buy immediately", "purchase now"]
     if uw in text.lower()),                                          # urgency phrases
             len(sentences),                                     # sentence count
-            np.mean([len(s.split()) for s in sentences if s.strip()]) if sentences else 0,    # avg sentence length
+            np.mean([len(s.split()) for s in sentences if s.strip()]) if any(s.strip() for s in sentences) else 0.0,
         ])
     return np.array(features)
 
@@ -142,7 +142,7 @@ def train(csv_path=None):
     )
 
     # Ensemble: Logistic Regression + Random Forest
-    lr = LogisticRegression(max_iter=3000, C=1.0, class_weight="balanced", solver="saga")
+    lr = LogisticRegression(max_iter=1000, C=1.0, class_weight="balanced", solver="liblinear")
     rf = RandomForestClassifier(n_estimators=200, random_state=42,
                                 class_weight="balanced", n_jobs=-1)
 
@@ -154,10 +154,10 @@ def train(csv_path=None):
 
     # Evaluate
     y_pred = ensemble.predict(X_test)
-    cv_scores = cross_val_score(ensemble, X_combined, y, cv=5, scoring="f1")
-
-    print(f"\n✅ Test Accuracy : {accuracy_score(y_test, y_pred):.2%}")
-    print(f"✅ CV F1 Score   : {cv_scores.mean():.2%} ± {cv_scores.std():.2%}")
+    from sklearn.metrics import f1_score
+    f1 = f1_score(y_test, y_pred)
+    print(f"✅ F1 Score      : {f1:.2%}")
+    #print(f"✅ CV F1 Score   : {cv_scores.mean():.2%} ± {cv_scores.std():.2%}")
     print("\n" + classification_report(y_test, y_pred, target_names=["Real", "Fake"]))
 
     # Save artifacts
